@@ -1,18 +1,22 @@
 -- Flyway Migration V1
--- Descrição: Criação do esquema base petmatchdb, incluindo a nova tabela Usuarios.
+-- Descrição: Criação do esquema base petmatchdb, corrigindo sintaxe de FKs e implementando a tabela Usuarios.
+
+-- NOTA: Os campos 'accessLevel' e 'state' foram renomeados para 'access_level' e 'register_state'
+-- para seguir o padrão snake_case do MySQL/JPA e evitar o erro 'Unknown column' (500) anterior.
+-- Certifique-se de atualizar sua entidade Usuario.java com: @Column(name="access_level")
 
 --
--- Table structure for table `usuarios` (NOVA TABELA BASE)
+-- Table structure for table `usuarios` (TABELA BASE)
 --
 CREATE TABLE `usuarios` (
-    `id` BINARY(16) NOT NULL, -- UUIDs são tipicamente armazenados como BINARY(16) no MySQL para performance
+    `id` BINARY(16) NOT NULL, -- UUIDs
     `name` VARCHAR(255),
     `email` VARCHAR(255) NOT NULL,
     `senha_usuario` VARCHAR(255) NOT NULL,
     `picture` VARCHAR(255),
     `fcmToken` VARCHAR(255),
-    `state` VARCHAR(50) NOT NULL,          -- Para o Enum RegisterState
-    `accessLevel` VARCHAR(50) NOT NULL,    -- Para o Enum UserLevel
+    `register_state` VARCHAR(50) NOT NULL,   -- Renomeado para seguir o snake_case
+    `access_level` VARCHAR(50) NOT NULL,     -- Renomeado para seguir o snake_case
     PRIMARY KEY (`id`),
     UNIQUE KEY `email_usuario` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -23,53 +27,58 @@ CREATE TABLE `usuarios` (
 -- Table structure for table `adminusuarios`
 --
 CREATE TABLE `adminusuarios` (
-    -- Nota: Presumindo que esta tabela também fará referência à tabela Usuarios futuramente
-    `id_admin` binary(16) NOT NULL,
-    `nome_admin` varchar(255) NOT NULL,
-    `email_admin` varchar(100) NOT NULL,
-    `senha_admin` varchar(100) NOT NULL,
-    `cpf_cnpj_admin` varchar(20) DEFAULT NULL,
+    `id_admin` BINARY(16) NOT NULL,
+    `usuario_id` BINARY(16) NOT NULL, -- Coluna FK obrigatória
+    `nome_admin` VARCHAR(255) NOT NULL,
+    `email_admin` VARCHAR(100) NOT NULL,
+    `senha_admin` VARCHAR(100) NOT NULL,
+    `cpf_cnpj_admin` VARCHAR(20) DEFAULT NULL,
     PRIMARY KEY (`id_admin`),
     UNIQUE KEY `email_admin` (`email_admin`),
-    UNIQUE KEY `cpf_cnpj_admin` (`cpf_cnpj_admin`)
-    CONSTRAINT `usuarios_admin_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
+    UNIQUE KEY `cpf_cnpj_admin` (`cpf_cnpj_admin`),
+    UNIQUE KEY `unq_admin_usuario` (`usuario_id`), -- Garante o relacionamento 1:1 com Usuarios
+    CONSTRAINT `fk_admin_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Table structure for table `adotanteusuarios`
 --
 CREATE TABLE `adotanteusuarios` (
-    `id_adotante` binary(16) NOT NULL,
-    `nome_adotante` varchar(100) NOT NULL,
-    `cpf_adotante` varchar(14) NOT NULL,
-    `endereco_adotante` varchar(255) NOT NULL,
-    `celular_adotante` varchar(20) DEFAULT NULL,
-    `email_adotante` varchar(100) DEFAULT NULL,
-    `senha_adotante` varchar(100) NOT NULL,
-    `descricao_outros_animais` varchar(255) DEFAULT NULL,
-    `preferencia` varchar(50) DEFAULT NULL,
+    `id_adotante` BINARY(16) NOT NULL,
+    `usuario_id` BINARY(16) NOT NULL, -- Coluna FK obrigatória
+    `nome_adotante` VARCHAR(100) NOT NULL,
+    `cpf_adotante` VARCHAR(14) NOT NULL,
+    `endereco_adotante` VARCHAR(255) NOT NULL,
+    `celular_adotante` VARCHAR(20) DEFAULT NULL,
+    `email_adotante` VARCHAR(100) DEFAULT NULL,
+    `senha_adotante` VARCHAR(100) NOT NULL,
+    `descricao_outros_animais` VARCHAR(255) DEFAULT NULL,
+    `preferencia` VARCHAR(50) DEFAULT NULL,
     PRIMARY KEY (`id_adotante`),
     UNIQUE KEY `cpf_adotante` (`cpf_adotante`),
-    UNIQUE KEY `email_adotante` (`email_adotante`)
-    CONSTRAINT `usuarios_adotante_usuarios` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
+    UNIQUE KEY `email_adotante` (`email_adotante`),
+    UNIQUE KEY `unq_adotante_usuario` (`usuario_id`), -- Garante o relacionamento 1:1 com Usuarios
+    CONSTRAINT `fk_adotante_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Table structure for table `ongusuarios`
 --
 CREATE TABLE `ongusuarios` (
-    `id_ong` binary(16) NOT NULL,
-    `nome_fantasia_ong` varchar(255) NOT NULL,
-    `email_ong` varchar(100) NOT NULL,
-    `senha_ong` varchar(100) NOT NULL,
-    `endereco_ong` varchar(255) NOT NULL,
-    `telefone_ong` varchar(20) DEFAULT NULL,
-    `celular_ong` varchar(20) DEFAULT NULL,
-    `cnpj_ong` varchar(20) DEFAULT NULL,
+    `id_ong` BINARY(16) NOT NULL,
+    `usuario_id` BINARY(16) NOT NULL, -- Coluna FK obrigatória
+    `nome_fantasia_ong` VARCHAR(255) NOT NULL,
+    `email_ong` VARCHAR(100) NOT NULL,
+    `senha_ong` VARCHAR(100) NOT NULL,
+    `endereco_ong` VARCHAR(255) NOT NULL,
+    `telefone_ong` VARCHAR(20) DEFAULT NULL,
+    `celular_ong` VARCHAR(20) DEFAULT NULL,
+    `cnpj_ong` VARCHAR(20) DEFAULT NULL,
     PRIMARY KEY (`id_ong`),
     UNIQUE KEY `email_ong` (`email_ong`),
-    UNIQUE KEY `cnpj_ong` (`cnpj_ong`)
-    CONSTRAINT `usuarios_ong_usuarios` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
+    UNIQUE KEY `cnpj_ong` (`cnpj_ong`),
+    UNIQUE KEY `unq_ong_usuario` (`usuario_id`), -- Garante o relacionamento 1:1 com Usuarios
+    CONSTRAINT `fk_ong_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
