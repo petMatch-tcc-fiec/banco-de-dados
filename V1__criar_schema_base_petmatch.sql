@@ -32,6 +32,7 @@ CREATE TABLE `adminusuarios` (
     PRIMARY KEY (`id_admin`),
     UNIQUE KEY `email_admin` (`email_admin`),
     UNIQUE KEY `cpf_cnpj_admin` (`cpf_cnpj_admin`)
+    CONSTRAINT `usuarios_admin_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -50,6 +51,7 @@ CREATE TABLE `adotanteusuarios` (
     PRIMARY KEY (`id_adotante`),
     UNIQUE KEY `cpf_adotante` (`cpf_adotante`),
     UNIQUE KEY `email_adotante` (`email_adotante`)
+    CONSTRAINT `usuarios_adotante_usuarios` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -67,6 +69,7 @@ CREATE TABLE `ongusuarios` (
     PRIMARY KEY (`id_ong`),
     UNIQUE KEY `email_ong` (`email_ong`),
     UNIQUE KEY `cnpj_ong` (`cnpj_ong`)
+    CONSTRAINT `usuarios_ong_usuarios` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
